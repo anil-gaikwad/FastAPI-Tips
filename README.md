@@ -35,3 +35,25 @@ function using a thread pool.
 
 > [!TIP]
     There are only 40 threads available in the thread pool. If you use all of them, your application will be blocked.
+
+
+To change the number of threads available, you can use the following code:
+
+```py
+import anyio
+from contextlib import asynccontextmanager
+from typing import Iterator
+
+from fastapi import FastAPI
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> Iterator[None]:
+    limiter = anyio.to_thread.current_default_thread_limiter()
+    limiter.total_tokens = 100
+    yield
+
+app = FastAPI(lifespan=lifespan)
+```
+
+You can read more about it on [AnyIO's documentation][increase-threadpool].
