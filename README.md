@@ -57,3 +57,44 @@ app = FastAPI(lifespan=lifespan)
 ```
 
 You can read more about it on [AnyIO's documentation][increase-threadpool].
+
+
+## 3. Use `async for` instead of `while True` on WebSocket
+
+Most of the examples you will find on the internet use `while True` to read messages from the WebSocket.
+
+I believe the uglier notation is used mainly because the Starlette documentation didn't show the `async for` notation for a long time.
+
+Instead of using the `while True`:
+
+```py
+from fastapi import FastAPI
+from starlette.websockets import WebSocket
+
+app = FastAPI()
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
+```
+
+You can use the `async for` notation:
+
+```py
+from fastapi import FastAPI
+from starlette.websockets import WebSocket
+
+app = FastAPI()
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    await websocket.accept()
+    async for data in websocket.iter_text():
+        await websocket.send_text(f"Message text was: {data}")
+```
+
+You can read more about it on the [Starlette documentation][websockets-iter-data].
+
