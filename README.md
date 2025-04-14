@@ -98,3 +98,31 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
 
 You can read more about it on the [Starlette documentation][websockets-iter-data].
 
+
+## 4. Ignore the `WebSocketDisconnect` exception
+
+If you are using the `while True` notation, you will need to catch the `WebSocketDisconnect`.
+The `async for` notation will catch it for you.
+
+```py
+from fastapi import FastAPI
+from starlette.websockets import WebSocket, WebSocketDisconnect
+
+app = FastAPI()
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_text(f"Message text was: {data}")
+    except WebSocketDisconnect:
+        pass
+```
+
+If you need to release resources when the WebSocket is disconnected, you can use that exception to do it.
+
+If you are using an older FastAPI version, only the `receive` methods will raise the `WebSocketDisconnect` exception.
+The `send` methods will not raise it. In the latest versions, all methods will raise it.
+In that case, you'll need to add the `send` methods inside the `try` block.
