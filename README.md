@@ -126,3 +126,42 @@ If you need to release resources when the WebSocket is disconnected, you can use
 If you are using an older FastAPI version, only the `receive` methods will raise the `WebSocketDisconnect` exception.
 The `send` methods will not raise it. In the latest versions, all methods will raise it.
 In that case, you'll need to add the `send` methods inside the `try` block.
+
+
+## 6. Use Lifespan State instead of `app.state`
+
+Since not long ago, FastAPI supports the [lifespan state], which defines a standard way to manage objects that need to be created at
+startup, and need to be used in the request-response cycle.
+
+The `app.state` is not recommended to be used anymore. You should use the [lifespan state] instead.
+
+Using the `app.state`, you'd do something like this:
+
+```py
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
+
+from fastapi import FastAPI, Request
+from httpx import AsyncClient
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    async with AsyncClient(app=app) as client:
+        app.state.client = client
+        yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+@app.get("/")
+async def read_root(request: Request):
+    client = request.app.state.client
+    response = await client.get("/")
+    return response.json()
+```
+
+Using the lifespan state, you'd do something like this:
+
+
