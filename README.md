@@ -128,7 +128,7 @@ The `send` methods will not raise it. In the latest versions, all methods will r
 In that case, you'll need to add the `send` methods inside the `try` block.
 
 
-## 6. Use Lifespan State instead of `app.state`
+## 5. Use Lifespan State instead of `app.state`
 
 Since not long ago, FastAPI supports the [lifespan state], which defines a standard way to manage objects that need to be created at
 startup, and need to be used in the request-response cycle.
